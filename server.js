@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const { Sequelize, DataTypes } = require('sequelize');
+const https = require('https');
 
 // Configuración de la base de datos
 const sequelize = new Sequelize('dinamicos', 'root', 'mecdan187', {
@@ -30,6 +31,12 @@ const mediciones = sequelize.define('mediciones', {
   }
 );
 
+/*setInterval(() => {
+    https.get('https://tu-servidor.onrender.com', (res) => {
+      console.log(`Ping enviado, status: ${res.statusCode}`);
+    });
+  }, 5 * 60 * 1000); // Cada 5 minutos
+*/
 // Sincronización con la base de datos
 sequelize.sync()
     .then(() => console.log('Base de datos sincronizada.'))
