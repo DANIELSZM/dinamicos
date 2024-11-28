@@ -1,20 +1,8 @@
-import express from 'express';
-import { json, urlencoded } from 'body-parser';
-import { Sequelize, DataTypes } from 'sequelize';
-const sequelize = require('./db');
-require('dotenv').config();
-
-// Verificar conexión a la base de datos
-sequelize.authenticate()
-    .then(() => {
-        console.log('Conexión a la base de datos exitosa.');
-
-        // Sincronizar los modelos con la base de datos
-        sequelize.sync({ force: false }) // Si estás en desarrollo, puedes usar 'force: true' para reiniciar las tablas
-            .then(() => console.log('Base de datos sincronizada correctamente.'))
-            .catch(err => console.error('Error sincronizando la base de datos:', err));
-    })
-    .catch(err => console.error('No se pudo conectar a la base de datos:', err));
+const express = require('express');
+const bodyParser = require('body-parser'); // CommonJS no necesita ajustes
+const { Sequelize, DataTypes } = require('sequelize');
+const sequelize = require('./db'); // Asegúrate de que ./db.js use CommonJS
+require('dotenv').config(); // Configuración de dotenv
 
 // Modelo para las mediciones
 const mediciones = sequelize.define('mediciones', {
@@ -38,18 +26,27 @@ const mediciones = sequelize.define('mediciones', {
     }
 );
 
+// Verificar conexión a la base de datos
+sequelize.authenticate()
+    .then(() => {
+        console.log('Conexión a la base de datos exitosa.');
+
+        // Sincronizar los modelos con la base de datos
+        sequelize.sync({ force: false }) // Si estás en desarrollo, puedes usar 'force: true' para reiniciar las tablas
+            .then(() => console.log('Base de datos sincronizada correctamente.'))
+            .catch(err => console.error('Error sincronizando la base de datos:', err));
+    })
+    .catch(err => console.error('No se pudo conectar a la base de datos:', err));
+
+
 setInterval(() => {
     get('https://dinamicos.onrender.com', (res) => {
         console.log(`Ping enviado, status: ${res.statusCode}`);
     });
 }, 5 * 60 * 1000); // Cada 5 minutos
 
-// Sincronización con la base de datos
-sequelize.sync()
-    .then(() => console.log('Base de datos sincronizada.'))
-    .catch(err => console.error('Error sincronizando la base de datos:', err));
-
 const app = express();
+
 app.use(json());
 app.use(urlencoded({ extended: true }));
 
