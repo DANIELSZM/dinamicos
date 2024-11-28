@@ -1,13 +1,20 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const { Sequelize, DataTypes } = require('sequelize');
-const https = require('https');
+import express from 'express';
+import { json, urlencoded } from 'body-parser';
+import { Sequelize, DataTypes } from 'sequelize';
+const sequelize = require('./db');
+require('dotenv').config();
 
-// Configuración de la base de datos
-const sequelize = new Sequelize('dinamicos', 'root', 'mecdan187', {
-    host: 'localhost',
-    dialect: 'mysql',
-});
+// Verificar conexión a la base de datos
+sequelize.authenticate()
+    .then(() => {
+        console.log('Conexión a la base de datos exitosa.');
+
+        // Sincronizar los modelos con la base de datos
+        sequelize.sync({ force: false }) // Si estás en desarrollo, puedes usar 'force: true' para reiniciar las tablas
+            .then(() => console.log('Base de datos sincronizada correctamente.'))
+            .catch(err => console.error('Error sincronizando la base de datos:', err));
+    })
+    .catch(err => console.error('No se pudo conectar a la base de datos:', err));
 
 // Modelo para las mediciones
 const mediciones = sequelize.define('mediciones', {
@@ -32,7 +39,7 @@ const mediciones = sequelize.define('mediciones', {
 );
 
 setInterval(() => {
-    https.get('https://dinamicos.onrender.com', (res) => {
+    get('https://dinamicos.onrender.com', (res) => {
         console.log(`Ping enviado, status: ${res.statusCode}`);
     });
 }, 5 * 60 * 1000); // Cada 5 minutos
@@ -43,8 +50,8 @@ sequelize.sync()
     .catch(err => console.error('Error sincronizando la base de datos:', err));
 
 const app = express();
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(json());
+app.use(urlencoded({ extended: true }));
 
 // Ruta para recibir datos del ESP32
 app.post('/api/mediciones', async (req, res) => {
