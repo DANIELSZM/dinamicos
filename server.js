@@ -23,20 +23,20 @@ const mediciones = sequelize.define('mediciones', {
         type: DataTypes.DATE,
         defaultValue: Sequelize.NOW,
     },
-    
+
 },
-{
-    timestamps: false, // Deshabilita createdAt y updatedAt
-    tableName: 'mediciones', // Asegúrate de que coincida con el nombre de tu tabla en la base de datos
-  }
+    {
+        timestamps: false, // Deshabilita createdAt y updatedAt
+        tableName: 'mediciones', // Asegúrate de que coincida con el nombre de tu tabla en la base de datos
+    }
 );
 
-/*setInterval(() => {
-    https.get('https://tu-servidor.onrender.com', (res) => {
-      console.log(`Ping enviado, status: ${res.statusCode}`);
+setInterval(() => {
+    https.get('https://dinamicos.onrender.com', (res) => {
+        console.log(`Ping enviado, status: ${res.statusCode}`);
     });
-  }, 5 * 60 * 1000); // Cada 5 minutos
-*/
+}, 5 * 60 * 1000); // Cada 5 minutos
+
 // Sincronización con la base de datos
 sequelize.sync()
     .then(() => console.log('Base de datos sincronizada.'))
