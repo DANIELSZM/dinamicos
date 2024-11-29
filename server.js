@@ -38,17 +38,21 @@ sequelize.authenticate()
     })
     .catch(err => console.error('No se pudo conectar a la base de datos:', err));
 
+try {
+    setInterval(() => {
+        get('https://dinamicos.onrender.com', (res) => {
+            console.log(`Ping enviado, status: ${res.statusCode}`);
+        });
+    }, 5 * 60 * 1000); // Cada 5 minutos
+} catch (error) {
+    console.log(error);
+};
 
-setInterval(() => {
-    get('https://dinamicos.onrender.com', (res) => {
-        console.log(`Ping enviado, status: ${res.statusCode}`);
-    });
-}, 5 * 60 * 1000); // Cada 5 minutos
 
 const app = express();
 
-app.use(json());
-app.use(urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Ruta para recibir datos del ESP32
 app.post('/api/mediciones', async (req, res) => {
@@ -70,5 +74,5 @@ app.post('/api/mediciones', async (req, res) => {
 // Iniciar el servidor
 const PORT = 3000;
 app.listen(PORT, () => {
-    console.log(`Servidor escuchando en http://localhost:${PORT}`);
+    console.log(`Servidor escuchando en https://dinamicos.onrender.com:${PORT}`);
 });
