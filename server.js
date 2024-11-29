@@ -90,8 +90,8 @@ app.post('/api/mediciones', async (req, res) => {
     }
 
     try {
-        const nuevaMedicion1 = await mediciones_in.create({ humedad1, temperatura1 });
-        const nuevaMedicion2 = await mediciones_out.create({ humedad2, temperatura2});
+        const nuevaMedicion1 = await mediciones_in.create({ humedad: humedad1, temperatura: temperatura1 });
+        const nuevaMedicion2 = await mediciones_out.create({ humedad: humedad2, temperatura: temperatura2});
         await t.commit();
         res.status(201).json({ 
             mensaje: 'Medición in y medicion out guardadas exitosamente.', 
