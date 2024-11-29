@@ -6,7 +6,7 @@ require('dotenv').config(); // Configuración de dotenv
 const https = require('https')
 
 // Modelo para las mediciones
-const mediciones = sequelize.define('mediciones', {
+const mediciones_in = sequelize.define('mediciones_in', {
     humedad: {
         type: DataTypes.FLOAT,
         allowNull: false,
@@ -23,7 +23,29 @@ const mediciones = sequelize.define('mediciones', {
 },
     {
         timestamps: false, // Deshabilita createdAt y updatedAt
-        tableName: 'mediciones', // Asegúrate de que coincida con el nombre de tu tabla en la base de datos
+        tableName: 'mediciones_in', // Asegúrate de que coincida con el nombre de tu tabla en la base de datos
+    }
+);
+
+//Modelo de mediciones afuera
+const mediciones_out = sequelize.define('mediciones_out', {
+    humedad: {
+        type: DataTypes.FLOAT,
+        allowNull: false,
+    },
+    temperatura: {
+        type: DataTypes.FLOAT,
+        allowNull: false,
+    },
+    fecha: {
+        type: DataTypes.DATE,
+        defaultValue: Sequelize.NOW,
+    },
+
+},
+    {
+        timestamps: false, // Deshabilita createdAt y updatedAt
+        tableName: 'mediciones_out', // Asegúrate de que coincida con el nombre de tu tabla en la base de datos
     }
 );
 
@@ -39,7 +61,7 @@ sequelize.authenticate()
     })
     .catch(err => console.error('No se pudo conectar a la base de datos:', err));
 
-setInterval(() => {
+setInterval(() => {//para que el servicio no se caiga
     try {
         https.get('https://dinamicos.onrender.com', (res) => {
             console.log(`Ping enviado, status: ${res.statusCode}`);
@@ -59,17 +81,28 @@ app.use(express.urlencoded({ extended: true }));
 
 // Ruta para recibir datos del ESP32
 app.post('/api/mediciones', async (req, res) => {
-    const { humedad, temperatura } = req.body;
+    const { humedad1, temperatura1, humedad2, temperatura2 } = req.body;
+    const t = await sequelize.transaction();
 
-    if (humedad == null || temperatura == null) {
+    if (humedad1 == null || temperatura1 == null || humedad2 == null || temperatura2 == null) {
+        await t.rollback();
         return res.status(400).json({ error: 'Faltan datos en la solicitud.' });
     }
 
     try {
-        const nuevaMedicion = await mediciones.create({ humedad, temperatura });
-        res.status(201).json({ mensaje: 'Medición guardada exitosamente.', medicion: nuevaMedicion });
+        const nuevaMedicion1 = await mediciones_in.create({ humedad1, temperatura1 });
+        const nuevaMedicion2 = await mediciones_out.create({ humedad2, temperatura2});
+        await t.commit();
+        res.status(201).json({ 
+            mensaje: 'Medición in y medicion out guardadas exitosamente.', 
+            medicion: {
+                mediciones_in: nuevaMedicion1,
+                mediciones_out: nuevaMedicion2
+            }
+         });
     } catch (err) {
-        console.error('Error al guardar la medición:', err);
+        await t.rollback();
+        console.error('Error al guardar las mediciónes:', err);
         res.status(500).json({ error: 'Error interno del servidor.' });
     }
 });
@@ -77,5 +110,5 @@ app.post('/api/mediciones', async (req, res) => {
 // Iniciar el servidor
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
-    console.log(`Servidor escuchando en https://dinamicos.onrender.com:${port}`);
+    console.log(`Servidor escuchando en el puerto ${port}`);
 });
