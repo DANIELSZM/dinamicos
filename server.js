@@ -3,6 +3,7 @@ const bodyParser = require('body-parser'); // CommonJS no necesita ajustes
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('./db'); // Asegúrate de que ./db.js use CommonJS
 require('dotenv').config(); // Configuración de dotenv
+const https = require('https')
 
 // Modelo para las mediciones
 const mediciones = sequelize.define('mediciones', {
@@ -38,15 +39,17 @@ sequelize.authenticate()
     })
     .catch(err => console.error('No se pudo conectar a la base de datos:', err));
 
-try {
-    setInterval(() => {
-        get('https://dinamicos.onrender.com', (res) => {
+setInterval(() => {
+    try {
+        https.get('https://dinamicos.onrender.com', (res) => {
             console.log(`Ping enviado, status: ${res.statusCode}`);
+        }).on('error', (err) => {
+            console.error(`Error en la solicitud: ${err.message}`);
         });
-    }, 5 * 60 * 1000); // Cada 5 minutos
-} catch (error) {
-    console.log(error);
-};
+    } catch (error) {
+        console.error(`Error inesperado: ${error.message}`);
+    }
+}, 5 * 60 * 1000); // Cada 5 minutos
 
 
 const app = express();
