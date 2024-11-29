@@ -75,7 +75,7 @@ app.post('/api/mediciones', async (req, res) => {
 });
 
 // Iniciar el servidor
-const PORT = 3000;
-app.listen(PORT, () => {
-    console.log(`Servidor escuchando en https://dinamicos.onrender.com:${PORT}`);
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+    console.log(`Servidor escuchando en https://dinamicos.onrender.com:${port}`);
 });
